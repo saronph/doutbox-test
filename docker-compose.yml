@@ -17,6 +17,48 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+    networks:
+      - doutbox-network
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: doutbox-api
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: ${PORT:-3000}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_DATABASE: ${DB_DATABASE:-postgres}
+      DB_SYNCHRONIZE: ${DB_SYNCHRONIZE:-false}
+      DB_LOGGING: ${DB_LOGGING:-false}
+      DB_RUN_MIGRATIONS: ${DB_RUN_MIGRATIONS:-true}
+      JWT_SECRET: ${JWT_SECRET}
+      ACCESS_TOKEN_SECRET: ${ACCESS_TOKEN_SECRET}
+      ACCESS_TOKEN_EXPIRES_IN: ${ACCESS_TOKEN_EXPIRES_IN:-900}
+      REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET}
+      REFRESH_TOKEN_EXPIRES_IN: ${REFRESH_TOKEN_EXPIRES_IN:-604800}
+      NUVENDE_API_URL: ${NUVENDE_API_URL}
+      NUVENDE_CLIENT_ID: ${NUVENDE_CLIENT_ID}
+      NUVENDE_CLIENT_SECRET: ${NUVENDE_CLIENT_SECRET}
+      NUVENDE_CHAVE_PIX: ${NUVENDE_CHAVE_PIX}
+    ports:
+      - '${PORT:-3000}:3000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - doutbox-network
+
+networks:
+  doutbox-network:
+    driver: bridge
 
 volumes:
   postgres-data:

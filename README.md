@@ -23,39 +23,123 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+API REST para gerenciamento de invoices PIX integrada com a API Nuvende.
 
-## Project setup
+## Tecnologias
+
+- NestJS
+- TypeScript
+- TypeORM
+- PostgreSQL
+- Docker
+- Jest
+
+## Instalação
+
+### Com Docker (Recomendado)
+
+1. Clone o repositório:
 
 ```bash
-$ pnpm install
+git clone <repository-url>
+cd doutbox-test
 ```
 
-## Compile and run the project
+2. Copie o arquivo `.env.example` para `.env` e configure as variáveis:
+
+```bash
+cp .env.example .env
+```
+
+3. Inicie os containers:
+
+```bash
+docker-compose up -d
+```
+
+A API estará disponível em `http://localhost:3000`
+
+### Sem Docker
+
+1. Instale as dependências:
+
+```bash
+pnpm install
+```
+
+2. Configure as variáveis de ambiente no arquivo `.env`
+
+3. Certifique-se de que o PostgreSQL está rodando
+
+4. Execute a aplicação:
 
 ```bash
 # development
-$ pnpm run start
+pnpm run start:dev
 
-# watch mode
-$ pnpm run start:dev
+# production
+pnpm run build
+pnpm run start:prod
+```
 
-# production mode
-$ pnpm run start:prod
+## Docker Commands
+
+```bash
+# Iniciar containers
+docker-compose up -d
+
+# Ver logs
+docker-compose logs -f api
+
+# Parar containers
+docker-compose down
+
+# Rebuild da API
+docker-compose up -d --build api
+
+# Acessar shell da API
+docker-compose exec api sh
 ```
 
 ## Run tests
 
 ```bash
 # unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
+pnpm run test:unit
 
 # test coverage
-$ pnpm run test:cov
+pnpm run test:cov
 ```
+
+## Variáveis de Ambiente
+
+Veja o arquivo `.env.example` para todas as variáveis necessárias.
+
+Principais variáveis:
+
+- `DB_*`: Configurações do banco de dados
+- `JWT_SECRET`, `ACCESS_TOKEN_SECRET`, `REFRESH_TOKEN_SECRET`: Secrets para JWT
+- `NUVENDE_*`: Credenciais da API Nuvende
+
+## Testando a API
+
+1. Acesse a documentação Swagger em `http://localhost:3000/docs`
+
+2. Faça o sign-in:
+   - Clique em `POST /auth/sign-in`
+   - Clique em "Try it out"
+   - Insira as credenciais de um usuário
+   - Execute a requisição
+   - Copie o `access_token` do retorno
+
+3. Autorize as requisições:
+   - Clique no botão "Authorize" no topo da página
+   - Cole o `access_token` no campo
+   - Clique em "Authorize"
+
+4. Agora você pode testar as rotas protegidas:
+   - `POST /invoices` - Criar cobrança PIX
+   - E outras rotas autenticadas
 
 ## Deployment
 
