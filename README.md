@@ -139,7 +139,7 @@ Principais variáveis:
 
 4. Agora você pode testar as rotas protegidas:
    - `POST /invoices` - Criar cobrança PIX
-   - E outras rotas autenticadas
+   - Body tem cpf e cnpj, envie apenas um dos dois
 
 ## Deployment
 
