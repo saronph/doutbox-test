@@ -34,6 +34,8 @@ describe('AuthController (E2E)', () => {
 
     dataSource = moduleRef.get(DataSource);
 
+    await dataSource.synchronize(true);
+
     const crypt = moduleRef.get(CryptService);
     const hashedPassword = await crypt.hash(signInDto.password);
 
