@@ -1,0 +1,92 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: doutbox_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    strategy:
+      matrix:
+        node-version: [20.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Create .env file
+        run: |
+          cat << EOF > .env
+          NODE_ENV=test
+          PORT=3000
+
+          DB_HOST=localhost
+          DB_PORT=5432
+          DB_USERNAME=postgres
+          DB_PASSWORD=postgres
+          DB_DATABASE=doutbox_test
+          DB_SYNCHRONIZE=true
+          DB_LOGGING=false
+
+          JWT_SECRET=test-secret-key-for-ci
+          JWT_ACCESS_TOKEN_SECRET=test-access-token-secret
+          JWT_ACCESS_TOKEN_EXPIRES_IN=15m
+          JWT_REFRESH_TOKEN_SECRET=test-refresh-token-secret
+          JWT_REFRESH_TOKEN_EXPIRES_IN=7d
+
+          NUVENDE_API_URL=https://api-sandbox.nuvende.com.br
+          NUVENDE_CLIENT_ID=test-client-id
+          NUVENDE_CLIENT_SECRET=test-client-secret
+          NUVENDE_CHAVE_PIX=test-pix-key
+          EOF
+
+      - name: Run tests
+        run: pnpm test:unit
